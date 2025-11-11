@@ -29,3 +29,8 @@ Thumbs.db
 
 # Spring Boot
 application-local.properties
+
+# Database
+data/
+*.mv.db
+*.trace.db
