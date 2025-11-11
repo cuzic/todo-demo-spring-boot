@@ -28,7 +28,7 @@
 | 項目 | 技術 | バージョン |
 |-----|------|----------|
 | 言語 | Java | 21 (LTS) |
-| フレームワーク | Spring Boot | 3.2.x |
+| フレームワーク | Spring Boot | 3.4.0 |
 | ビルドツール | Maven | 最新安定版 |
 | テンプレートエンジン | Thymeleaf | Spring Boot標準 |
 | データベース | H2 Database | Spring Boot標準 |
@@ -99,7 +99,7 @@ spring.sql.init.data-locations=classpath:data.sql
 ### 4.1 パッケージ構造（レイヤー別）
 
 ```
-com.example.simpletodo
+com.example.demo
 ├── controller
 │   └── TaskController.java
 ├── service
@@ -110,7 +110,7 @@ com.example.simpletodo
 │   └── Task.java
 ├── dto
 │   └── TaskForm.java
-└── SimpleTodoApplication.java
+└── TodoDemoApplication.java
 ```
 
 ### 4.2 リソース構成
@@ -176,10 +176,23 @@ src/main/resources
         <optional>true</optional>
     </dependency>
 
+    <!-- Spring Boot Starter Security -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-security</artifactId>
+    </dependency>
+
     <!-- Spring Boot Starter Test -->
     <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-test</artifactId>
+        <scope>test</scope>
+    </dependency>
+
+    <!-- Spring Security Test -->
+    <dependency>
+        <groupId>org.springframework.security</groupId>
+        <artifactId>spring-security-test</artifactId>
         <scope>test</scope>
     </dependency>
 </dependencies>
@@ -381,8 +394,9 @@ public class TaskForm {
 
 ### 9.1 CSRF対策
 
-- **実装方法**: Thymeleafの`th:action`による自動トークン付与
-- **Spring Security**: 導入しない（MVPでは不要）
+- **実装方法**: Spring Securityによる自動CSRF保護 + Thymeleafの`th:action`による自動トークン付与
+- **Spring Security**: 必須（CSRF保護のために導入）
+- **設定**: デフォルト設定でCSRF保護が有効化される
 
 ### 9.2 XSS対策
 
@@ -461,7 +475,7 @@ INSERT INTO tasks (title, completed, created_at, updated_at) VALUES
 
 ```properties
 # アプリケーション名
-spring.application.name=Simple Todo
+spring.application.name=todo-demo-spring-boot
 
 # サーバー設定
 server.port=8080
@@ -493,7 +507,7 @@ spring.thymeleaf.encoding=UTF-8
 
 # ログ設定
 logging.level.root=INFO
-logging.level.com.example.simpletodo=DEBUG
+logging.level.com.example.demo=DEBUG
 logging.level.org.springframework.web=DEBUG
 logging.level.org.hibernate.SQL=DEBUG
 logging.level.org.hibernate.type.descriptor.sql.BasicBinder=TRACE
@@ -703,8 +717,11 @@ public class TaskController {
     public String createTask(
             @Valid @ModelAttribute TaskForm taskForm,
             BindingResult result,
+            Model model,
             RedirectAttributes redirectAttributes) {
         if (result.hasErrors()) {
+            model.addAttribute("tasks", taskService.getAllTasks());
+            model.addAttribute("filter", null);
             return "tasks/list";
         }
         taskService.createTask(taskForm.getTitle());
@@ -899,12 +916,12 @@ java -jar target/simple-todo-1.0.0.jar
 
 | クラス | 役割 | パッケージ |
 |-------|------|-----------|
-| SimpleTodoApplication | メインクラス | com.example.simpletodo |
-| Task | エンティティ | com.example.simpletodo.entity |
-| TaskForm | フォームDTO | com.example.simpletodo.dto |
-| TaskRepository | リポジトリ | com.example.simpletodo.repository |
-| TaskService | サービス | com.example.simpletodo.service |
-| TaskController | コントローラー | com.example.simpletodo.controller |
+| TodoDemoApplication | メインクラス | com.example.demo |
+| Task | エンティティ | com.example.demo.entity |
+| TaskForm | フォームDTO | com.example.demo.dto |
+| TaskRepository | リポジトリ | com.example.demo.repository |
+| TaskService | サービス | com.example.demo.service |
+| TaskController | コントローラー | com.example.demo.controller |
 
 ### Bootstrap主要クラス
 
