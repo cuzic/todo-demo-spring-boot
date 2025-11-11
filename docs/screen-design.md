@@ -118,17 +118,17 @@ graph TD
     CreateProcess -->|失敗<br/>バリデーションエラー| List
     RedirectList --> List
 
-    List -->|POST /tasks/{id}/toggle<br/>完了切り替え| ToggleProcess[切り替え処理]
+    List -->|POST /tasks/:id/toggle<br/>完了切り替え| ToggleProcess[切り替え処理]
     ToggleProcess --> RedirectList2[リダイレクト<br/>GET /tasks]
     RedirectList2 --> List
 
-    List -->|POST /tasks/{id}/delete<br/>タスク削除| DeleteProcess[削除処理]
+    List -->|POST /tasks/:id/delete<br/>タスク削除| DeleteProcess[削除処理]
     DeleteProcess --> RedirectList3[リダイレクト<br/>GET /tasks]
     RedirectList3 --> List
 
-    List -->|GET /tasks/{id}/edit<br/>編集リンククリック| Edit[タスク編集画面<br/>/tasks/{id}/edit]
+    List -->|GET /tasks/:id/edit<br/>編集リンククリック| Edit[タスク編集画面<br/>/tasks/:id/edit]
 
-    Edit -->|POST /tasks/{id}<br/>更新| UpdateProcess{更新処理}
+    Edit -->|POST /tasks/:id<br/>更新| UpdateProcess{更新処理}
     UpdateProcess -->|成功| RedirectList4[リダイレクト<br/>GET /tasks]
     UpdateProcess -->|失敗<br/>バリデーションエラー| Edit
     RedirectList4 --> List
