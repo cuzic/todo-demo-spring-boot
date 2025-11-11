@@ -1,0 +1,39 @@
+[tools]
+java = "21"
+maven = "latest"
+
+[tasks.run]
+description = "Run the Spring Boot application"
+run = "mvn spring-boot:run"
+
+[tasks.build]
+description = "Build the application"
+run = "mvn clean package"
+
+[tasks.test]
+description = "Run tests"
+run = "mvn test"
+
+[tasks.verify]
+description = "Build and run all static analysis tools"
+run = "mvn clean verify"
+
+[tasks.check]
+description = "Run static analysis tools only"
+run = "mvn checkstyle:check pmd:check spotbugs:check"
+
+[tasks.checkstyle]
+description = "Run Checkstyle only"
+run = "mvn checkstyle:check"
+
+[tasks.pmd]
+description = "Run PMD only"
+run = "mvn pmd:check"
+
+[tasks.spotbugs]
+description = "Run SpotBugs only"
+run = "mvn spotbugs:check"
+
+[tasks.clean]
+description = "Clean build artifacts"
+run = "mvn clean"
