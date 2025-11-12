@@ -95,4 +95,22 @@ public class TaskService {
         task.setCompleted(!task.isCompleted());
         return taskRepository.save(task);
     }
+
+    /**
+     * Retrieves all active (incomplete) tasks.
+     *
+     * @return list of active tasks ordered by creation date descending
+     */
+    public List<Task> getActiveTasks() {
+        return taskRepository.findByCompletedOrderByCreatedAtDesc(false);
+    }
+
+    /**
+     * Retrieves all completed tasks.
+     *
+     * @return list of completed tasks ordered by creation date descending
+     */
+    public List<Task> getCompletedTasks() {
+        return taskRepository.findByCompletedOrderByCreatedAtDesc(true);
+    }
 }

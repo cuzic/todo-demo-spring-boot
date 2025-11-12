@@ -9,6 +9,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -194,5 +195,81 @@ class TaskServiceTest {
         assertFalse(result.isCompleted());
         verify(taskRepository).findById(taskId);
         verify(taskRepository).save(task);
+    }
+
+    @Test
+    void testGetActiveTasks_ReturnsOnlyIncompleteTasks() {
+        // Given
+        Task activeTask1 = new Task("未完了タスク1");
+        activeTask1.setCompleted(false);
+        Task activeTask2 = new Task("未完了タスク2");
+        activeTask2.setCompleted(false);
+        List<Task> activeTasks = Arrays.asList(activeTask1, activeTask2);
+
+        when(taskRepository.findByCompletedOrderByCreatedAtDesc(false)).thenReturn(activeTasks);
+
+        // When
+        List<Task> result = taskService.getActiveTasks();
+
+        // Then
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertFalse(result.get(0).isCompleted());
+        assertFalse(result.get(1).isCompleted());
+        verify(taskRepository).findByCompletedOrderByCreatedAtDesc(false);
+    }
+
+    @Test
+    void testGetCompletedTasks_ReturnsOnlyCompletedTasks() {
+        // Given
+        Task completedTask1 = new Task("完了タスク1");
+        completedTask1.setCompleted(true);
+        Task completedTask2 = new Task("完了タスク2");
+        completedTask2.setCompleted(true);
+        List<Task> completedTasks = Arrays.asList(completedTask1, completedTask2);
+
+        when(taskRepository.findByCompletedOrderByCreatedAtDesc(true)).thenReturn(completedTasks);
+
+        // When
+        List<Task> result = taskService.getCompletedTasks();
+
+        // Then
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertTrue(result.get(0).isCompleted());
+        assertTrue(result.get(1).isCompleted());
+        verify(taskRepository).findByCompletedOrderByCreatedAtDesc(true);
+    }
+
+    @Test
+    void testGetActiveTasks_ReturnsEmptyList_WhenNoActiveTasks() {
+        // Given
+        List<Task> emptyList = Collections.emptyList();
+
+        when(taskRepository.findByCompletedOrderByCreatedAtDesc(false)).thenReturn(emptyList);
+
+        // When
+        List<Task> result = taskService.getActiveTasks();
+
+        // Then
+        assertNotNull(result);
+        assertEquals(0, result.size());
+        verify(taskRepository).findByCompletedOrderByCreatedAtDesc(false);
+    }
+
+    @Test
+    void testGetCompletedTasks_ReturnsEmptyList_WhenNoCompletedTasks() {
+        // Given
+        List<Task> emptyList = Collections.emptyList();
+
+        when(taskRepository.findByCompletedOrderByCreatedAtDesc(true)).thenReturn(emptyList);
+
+        // When
+        List<Task> result = taskService.getCompletedTasks();
+
+        // Then
+        assertNotNull(result);
+        assertEquals(0, result.size());
+        verify(taskRepository).findByCompletedOrderByCreatedAtDesc(true);
     }
 }

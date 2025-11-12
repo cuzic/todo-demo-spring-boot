@@ -12,7 +12,10 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.util.List;
 
 /**
  * Controller for managing tasks.
@@ -27,6 +30,8 @@ public class TaskController {
     private static final String SUCCESS_MESSAGE = "successMessage";
     private static final String TASK_NOT_FOUND = "タスクが見つかりませんでした";
     private static final String PMD_SUPPRESS = "PMD.AvoidCatchingGenericException";
+    private static final String FILTER_ACTIVE = "active";
+    private static final String FILTER_COMPLETED = "completed";
 
     private final TaskService taskService;
 
@@ -44,14 +49,26 @@ public class TaskController {
     }
 
     /**
-     * Displays the task list.
+     * Displays the task list with optional filtering.
      *
+     * @param filter the filter parameter ("active", "completed", or null for all)
      * @param model the model
      * @return the view name
      */
     @GetMapping
-    public String getTaskList(Model model) {
-        model.addAttribute("tasks", taskService.getAllTasks());
+    public String getTaskList(
+            @RequestParam(required = false) String filter,
+            Model model) {
+        List<Task> tasks;
+        if (FILTER_ACTIVE.equals(filter)) {
+            tasks = taskService.getActiveTasks();
+        } else if (FILTER_COMPLETED.equals(filter)) {
+            tasks = taskService.getCompletedTasks();
+        } else {
+            tasks = taskService.getAllTasks();
+        }
+        model.addAttribute("tasks", tasks);
+        model.addAttribute("filter", filter);
         model.addAttribute("taskForm", new TaskForm());
         return "tasks/list";
     }
