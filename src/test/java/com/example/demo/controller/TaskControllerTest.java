@@ -202,4 +202,187 @@ class TaskControllerTest {
         // Then
         verify(taskService).deleteTask(taskId);
     }
+
+    // ========== Task Toggle Completion Tests ==========
+
+    @Test
+    void testToggleTask_Success_RedirectsToList() throws Exception {
+        // Given
+        Long taskId = 1L;
+        Task task = new Task("テストタスク");
+        task.setId(taskId);
+        task.setCompleted(false);
+        when(taskService.toggleTaskCompletion(taskId)).thenReturn(task);
+
+        // When & Then
+        mockMvc.perform(post("/tasks/{id}/toggle", taskId)
+                .with(csrf()))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/tasks"));
+
+        verify(taskService).toggleTaskCompletion(taskId);
+    }
+
+    @Test
+    void testToggleTask_TogglesCompletionStatus() throws Exception {
+        // Given
+        Long taskId = 1L;
+        Task task = new Task("テストタスク");
+        task.setId(taskId);
+        task.setCompleted(true);
+        when(taskService.toggleTaskCompletion(taskId)).thenReturn(task);
+
+        // When
+        mockMvc.perform(post("/tasks/{id}/toggle", taskId)
+                .with(csrf()))
+            .andExpect(status().is3xxRedirection());
+
+        // Then
+        verify(taskService).toggleTaskCompletion(taskId);
+    }
+
+    @Test
+    void testToggleTask_NonExistentId_ShowsError() throws Exception {
+        // Given
+        Long taskId = 999L;
+        doThrow(new RuntimeException("Task not found")).when(taskService).toggleTaskCompletion(taskId);
+
+        // When & Then
+        mockMvc.perform(post("/tasks/{id}/toggle", taskId)
+                .with(csrf()))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/tasks"))
+            .andExpect(flash().attributeExists("errorMessage"));
+
+        verify(taskService).toggleTaskCompletion(taskId);
+    }
+
+    // ========== Task Edit Form Tests ==========
+
+    @Test
+    void testGetEditForm_ValidId_ReturnsEditView() throws Exception {
+        // Given
+        Long taskId = 1L;
+        Task task = new Task("テストタスク");
+        task.setId(taskId);
+        when(taskService.getTaskById(taskId)).thenReturn(task);
+
+        // When & Then
+        mockMvc.perform(get("/tasks/{id}/edit", taskId))
+            .andExpect(status().isOk())
+            .andExpect(view().name("tasks/edit"))
+            .andExpect(model().attributeExists("task"))
+            .andExpect(model().attributeExists("taskForm"));
+
+        verify(taskService).getTaskById(taskId);
+    }
+
+    @Test
+    void testGetEditForm_NonExistentId_ShowsError() throws Exception {
+        // Given
+        Long taskId = 999L;
+        when(taskService.getTaskById(taskId)).thenThrow(new RuntimeException("Task not found"));
+
+        // When & Then
+        mockMvc.perform(get("/tasks/{id}/edit", taskId))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/tasks"))
+            .andExpect(flash().attributeExists("errorMessage"));
+
+        verify(taskService).getTaskById(taskId);
+    }
+
+    // ========== Task Update Tests ==========
+
+    @Test
+    void testUpdateTask_ValidInput_RedirectsToList() throws Exception {
+        // Given
+        Long taskId = 1L;
+        String newTitle = "更新されたタスク";
+        Task task = new Task(newTitle);
+        task.setId(taskId);
+        when(taskService.updateTask(taskId, newTitle)).thenReturn(task);
+
+        // When & Then
+        mockMvc.perform(post("/tasks/{id}", taskId)
+                .with(csrf())
+                .param("title", newTitle))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/tasks"))
+            .andExpect(flash().attributeExists("successMessage"));
+
+        verify(taskService).updateTask(taskId, newTitle);
+    }
+
+    @Test
+    void testUpdateTask_EmptyTitle_ShowsError() throws Exception {
+        // Given
+        Long taskId = 1L;
+        Task task = new Task("テストタスク");
+        task.setId(taskId);
+        when(taskService.getTaskById(taskId)).thenReturn(task);
+
+        // When & Then
+        mockMvc.perform(post("/tasks/{id}", taskId)
+                .with(csrf())
+                .param("title", ""))
+            .andExpect(status().isOk())
+            .andExpect(view().name("tasks/edit"))
+            .andExpect(model().attributeHasFieldErrors("taskForm", "title"));
+    }
+
+    @Test
+    void testUpdateTask_TitleTooLong_ShowsError() throws Exception {
+        // Given
+        Long taskId = 1L;
+        String longTitle = "a".repeat(256);
+        Task task = new Task("テストタスク");
+        task.setId(taskId);
+        when(taskService.getTaskById(taskId)).thenReturn(task);
+
+        // When & Then
+        mockMvc.perform(post("/tasks/{id}", taskId)
+                .with(csrf())
+                .param("title", longTitle))
+            .andExpect(status().isOk())
+            .andExpect(view().name("tasks/edit"))
+            .andExpect(model().attributeHasFieldErrors("taskForm", "title"));
+    }
+
+    @Test
+    void testUpdateTask_NonExistentId_ShowsError() throws Exception {
+        // Given
+        Long taskId = 999L;
+        when(taskService.updateTask(taskId, "新しいタイトル"))
+            .thenThrow(new RuntimeException("Task not found"));
+
+        // When & Then
+        mockMvc.perform(post("/tasks/{id}", taskId)
+                .with(csrf())
+                .param("title", "新しいタイトル"))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/tasks"))
+            .andExpect(flash().attributeExists("errorMessage"));
+
+        verify(taskService).updateTask(taskId, "新しいタイトル");
+    }
+
+    @Test
+    void testUpdateTask_UpdatesDatabase() throws Exception {
+        // Given
+        Long taskId = 1L;
+        String newTitle = "更新されたタスク";
+        Task task = new Task(newTitle);
+        task.setId(taskId);
+        when(taskService.updateTask(taskId, newTitle)).thenReturn(task);
+
+        // When
+        mockMvc.perform(post("/tasks/{id}", taskId)
+                .with(csrf())
+                .param("title", newTitle))
+            .andExpect(status().is3xxRedirection());
+
+        // Then
+        verify(taskService).updateTask(taskId, newTitle);
+    }
 }
