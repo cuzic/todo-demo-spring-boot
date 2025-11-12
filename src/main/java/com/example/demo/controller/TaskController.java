@@ -19,20 +19,63 @@ import java.util.List;
 
 /**
  * Controller for managing tasks.
- * Handles task list display, creation, deletion, completion toggle, and editing.
+ *
+ * <p>This controller handles all HTTP requests related to task management,
+ * including CRUD operations (Create, Read, Update, Delete) and filtering.</p>
+ *
+ * <p>Endpoints:</p>
+ * <ul>
+ *   <li>GET /tasks - Display task list with optional filtering</li>
+ *   <li>POST /tasks - Create a new task</li>
+ *   <li>GET /tasks/{id}/edit - Display task edit form</li>
+ *   <li>POST /tasks/{id} - Update an existing task</li>
+ *   <li>POST /tasks/{id}/delete - Delete a task</li>
+ *   <li>POST /tasks/{id}/toggle - Toggle task completion status</li>
+ * </ul>
+ *
+ * <p>All POST endpoints follow the Post-Redirect-Get (PRG) pattern to prevent
+ * duplicate form submissions and provide a better user experience.</p>
+ *
+ * <p>Filtering options:</p>
+ * <ul>
+ *   <li>?filter=active - Show only incomplete tasks</li>
+ *   <li>?filter=completed - Show only completed tasks</li>
+ *   <li>No filter - Show all tasks</li>
+ * </ul>
+ *
+ * @see TaskService
+ * @see TaskForm
+ * @see Task
  */
 @Controller
 @RequestMapping("/tasks")
 public class TaskController {
 
+    /** Redirect URL for task list page. */
     private static final String REDIRECT_TASKS = "redirect:/tasks";
+
+    /** Model attribute key for error messages. */
     private static final String ERROR_MESSAGE = "errorMessage";
+
+    /** Model attribute key for success messages. */
     private static final String SUCCESS_MESSAGE = "successMessage";
+
+    /** Error message text for task not found scenarios. */
     private static final String TASK_NOT_FOUND = "タスクが見つかりませんでした";
+
+    /** PMD suppression constant for generic exception catching. */
     private static final String PMD_SUPPRESS = "PMD.AvoidCatchingGenericException";
+
+    /** Filter value for active (incomplete) tasks. */
     private static final String FILTER_ACTIVE = "active";
+
+    /** Filter value for completed tasks. */
     private static final String FILTER_COMPLETED = "completed";
 
+    /**
+     * The task service for business logic operations.
+     * Injected via constructor dependency injection.
+     */
     private final TaskService taskService;
 
     /**

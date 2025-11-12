@@ -15,27 +15,61 @@ import java.time.LocalDateTime;
 
 /**
  * Task entity representing a task in the todo list.
+ *
+ * <p>This entity maps to the "tasks" table in the database and represents
+ * a single todo item with title, completion status, and timestamps.</p>
+ *
+ * <p>Features:</p>
+ * <ul>
+ *   <li>Auto-generated ID using IDENTITY strategy</li>
+ *   <li>Title validation (required, max 255 characters)</li>
+ *   <li>Completion status tracking (defaults to false)</li>
+ *   <li>Automatic creation and update timestamps</li>
+ * </ul>
+ *
+ * @see TaskRepository
+ * @see TaskService
  */
 @Entity
 @Table(name = "tasks")
 public class Task {
 
+    /**
+     * The unique identifier for this task.
+     * Generated automatically using database IDENTITY strategy.
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    /**
+     * The title or description of the task.
+     * Must not be blank and cannot exceed 255 characters.
+     */
     @NotBlank(message = "タイトルを入力してください")
     @Size(max = 255, message = "タイトルは255文字以内で入力してください")
     @Column(nullable = false, length = 255)
     private String title;
 
+    /**
+     * The completion status of the task.
+     * Defaults to false (not completed) when a task is created.
+     */
     @Column(nullable = false)
     private Boolean completed = false;
 
+    /**
+     * The timestamp when this task was created.
+     * Automatically set by Hibernate on entity creation and cannot be updated.
+     */
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    /**
+     * The timestamp when this task was last updated.
+     * Automatically updated by Hibernate whenever the entity is modified.
+     */
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
