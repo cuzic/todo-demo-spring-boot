@@ -45,6 +45,7 @@
         <exclude name="LawOfDemeter"/>
         <exclude name="LoosePackageCoupling"/>
         <exclude name="UseUtilityClass"/>
+        <exclude name="DataClass"/>
     </rule>
 
     <!-- Documentation -->
